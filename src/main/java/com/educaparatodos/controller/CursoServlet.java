@@ -84,7 +84,7 @@ public class CursoServlet extends HttpServlet {
     private void mostrarDetalle(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         Long id = Long.parseLong(request.getParameter("id"));
-        Curso curso = cursoDAO.buscarPorId(id);
+        Curso curso = cursoDAO.buscarPorIdConLecciones(id);
         request.setAttribute("curso", curso);
         RequestDispatcher rd = request.getRequestDispatcher("/curso-detalle.jsp");
         rd.forward(request, response);

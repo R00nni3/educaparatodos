@@ -41,6 +41,27 @@ public class CursoDAO {
         }
     }
 
+    /**
+     * Busca un curso por id, cargando también sus lecciones EN LA MISMA CONSULTA
+     * (JOIN FETCH), para poder mostrarlas en curso-detalle.jsp sin que explote
+     * la conexión ya cerrada (LazyInitializationException).
+     */
+    public Curso buscarPorIdConLecciones(Long id) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            TypedQuery<Curso> query = em.createQuery(
+                    "SELECT DISTINCT c FROM Curso c " +
+                            "LEFT JOIN FETCH c.lecciones " +
+                            "WHERE c.id = :id",
+                    Curso.class);
+            query.setParameter("id", id);
+            List<Curso> resultado = query.getResultList();
+            return resultado.isEmpty() ? null : resultado.get(0);
+        } finally {
+            em.close();
+        }
+    }
+
     public List<Curso> listarTodos() {
         EntityManager em = emf.createEntityManager();
         try {
