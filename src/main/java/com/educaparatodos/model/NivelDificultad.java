@@ -1,7 +1,7 @@
 package com.educaparatodos.model;
 
 public enum NivelDificultad {
-    BASICO,
+    PRINCIPIANTE,
     INTERMEDIO,
     AVANZADO
 }
