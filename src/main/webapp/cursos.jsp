@@ -32,7 +32,7 @@
 
         <!-- Grilla donde se mostrarán los cursos dinámicamente -->
         <div class="courses-grid" style="margin-top: 2rem;">
-            <c:forEach var="curso" items="${listaCursos}">
+            <c:forEach var="curso" items="${cursos}">
                 <div class="course-card">
                     <h4>${curso.titulo}</h4>
                     <p>${curso.descripcion}</p>

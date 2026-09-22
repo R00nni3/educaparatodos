@@ -79,6 +79,76 @@ body {
     color: #6b4d57;
 }
 
+/* Contenedor de la grilla de cursos */
+.courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+/* Estilo de cada tarjeta de curso */
+.course-card {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.course-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.course-card h4 {
+    color: #4a2d40; /* Tono acorde a la paleta */
+    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+}
+
+.course-card p {
+    color: #666;
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    flex-grow: 1;
+}
+
+/* Insignia de nivel */
+.badge {
+    display: inline-block;
+    background-color: #f3e6ed;
+    color: #6b3e5a;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    align-self: flex-start;
+    margin-bottom: 1rem;
+}
+
+/* Botón de detalles */
+.btn-details {
+    display: inline-block;
+    background: linear-gradient(135deg, #6b3e5a, #4a2d40);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 5px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: opacity 0.2s;
+}
+
+.btn-details:hover {
+    opacity: 0.9;
+    color: white;
+}
+
 /* Footer anclado abajo */
 footer {
     background-color: #2b262d;
