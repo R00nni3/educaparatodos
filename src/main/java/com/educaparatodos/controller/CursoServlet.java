@@ -110,6 +110,7 @@ public class CursoServlet extends HttpServlet {
         request.setAttribute("cursos", resultado);
         request.setAttribute("temaBuscado", tema);
         request.setAttribute("nivelBuscado", nivelParam);
+        //request.getRequestDispatcher("cursos.jsp").forward(request, response);
         RequestDispatcher rd = request.getRequestDispatcher("/cursos.jsp");
         rd.forward(request, response);
     }
