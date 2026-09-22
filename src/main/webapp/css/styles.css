@@ -1,13 +1,26 @@
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+/* Estructura general para fijar el footer abajo (Sticky Footer con Flexbox) */
+html, body {
+    height: 100%;
     margin: 0;
-    padding: 0;
-    background-color: #f4f7f6;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #fdfbfd;
     color: #333;
 }
 
-header {
-    background-color: #0056b3;
+/* Envuelve todo el contenido principal (excepto header y footer) en un div con esta clase */
+.main-content {
+    flex: 1;
+}
+
+/* Encabezado con tono armónico */
+.main-header {
+    background-color: #6b4d57;
     color: white;
     padding: 1rem 2rem;
     display: flex;
@@ -15,36 +28,62 @@ header {
     align-items: center;
 }
 
-nav a {
+.main-header nav a {
     color: white;
     text-decoration: none;
     margin-left: 20px;
-    font-weight: bold;
+    font-weight: 600;
 }
 
+/* Hero centrado y con colores de atardecer (Rosado a Lila) */
+.hero {
+    background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 50%, #845ec2 100%);
+    color: white;
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.hero-content {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.btn-primary {
+    background-color: #ffffff;
+    color: #845ec2;
+    padding: 12px 24px;
+    text-decoration: none;
+    font-weight: bold;
+    border-radius: 25px;
+    display: inline-block;
+    margin-top: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    transition: transform 0.2s, background-color 0.2s;
+}
+
+.btn-primary:hover {
+    background-color: #f3e7e8;
+    transform: translateY(-2px);
+}
+
+/* Contenedor de cursos */
 .container {
     max-width: 1100px;
-    margin: 30px auto;
+    margin: 2rem auto;
     padding: 0 20px;
 }
 
-.card-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
+.container h3 {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    color: #6b4d57;
 }
 
-.card {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
+/* Footer anclado abajo */
 footer {
+    background-color: #2b262d;
+    color: #d1c8d4;
     text-align: center;
-    padding: 20px;
-    margin-top: 40px;
-    background-color: #333;
-    color: white;
+    padding: 1.5rem;
+    width: 100%;
 }
