@@ -9,7 +9,7 @@ body {
     flex-direction: column;
     min-height: 100vh;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #fdfbfd;
+    background-color: #fcf8f9; /* Fondo general sutilmente cálido acorde al atardecer */
     color: #333;
 }
 
@@ -18,7 +18,7 @@ body {
     flex: 1;
 }
 
-/* Encabezado con tono armónico */
+/* Encabezado con tono atardecer unificado */
 .main-header {
     background-color: #6b4d57;
     color: white;
@@ -26,6 +26,12 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.main-header h1 {
+    margin: 0;
+    font-size: 1.5rem;
 }
 
 .main-header nav a {
@@ -33,6 +39,11 @@ body {
     text-decoration: none;
     margin-left: 20px;
     font-weight: 600;
+    transition: opacity 0.2s;
+}
+
+.main-header nav a:hover {
+    opacity: 0.8;
 }
 
 /* Hero centrado y con colores de atardecer (Rosado a Lila) */
@@ -66,7 +77,7 @@ body {
     transform: translateY(-2px);
 }
 
-/* Contenedor de cursos */
+/* Contenedor general */
 .container {
     max-width: 1100px;
     margin: 2rem auto;
@@ -76,7 +87,27 @@ body {
 .container h3 {
     font-size: 1.8rem;
     margin-bottom: 1.5rem;
-    color: #6b4d57;
+    color: #4a2d40;
+}
+
+/* Formulario de búsqueda (Catálogo) */
+.search-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1.5rem;
+}
+
+.search-form input[type="text"] {
+    flex: 1;
+    padding: 0.6rem 1rem;
+    border: 1px solid #dcd6d9;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    outline: none;
+}
+
+.search-form input[type="text"]:focus {
+    border-color: #6b3e5a;
 }
 
 /* Contenedor de la grilla de cursos */
@@ -106,7 +137,7 @@ body {
 }
 
 .course-card h4 {
-    color: #4a2d40; /* Tono acorde a la paleta */
+    color: #4a2d40;
     margin-bottom: 0.5rem;
     font-size: 1.25rem;
 }
@@ -141,6 +172,8 @@ body {
     text-align: center;
     text-decoration: none;
     font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
     transition: opacity 0.2s;
 }
 
@@ -149,11 +182,17 @@ body {
     color: white;
 }
 
-/* Footer anclado abajo */
+/* Footer anclado abajo con el tono armonizado */
 footer {
-    background-color: #2b262d;
-    color: #d1c8d4;
+    background-color: #4a2d40;
+    color: #f3e6ed;
     text-align: center;
     padding: 1.5rem;
     width: 100%;
+    margin-top: auto;
+}
+
+footer p {
+    margin: 0;
+    font-size: 0.9rem;
 }
