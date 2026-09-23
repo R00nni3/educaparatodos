@@ -3,10 +3,12 @@ package com.educaparatodos.dao;
 import com.educaparatodos.model.RolUsuario;
 import com.educaparatodos.model.Usuario;
 import com.educaparatodos.util.JPAUtil;
+import com.educaparatodos.util.PasswordUtil;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
+import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 import java.util.Date;
 import java.util.List;
@@ -28,6 +30,21 @@ public class UsuarioDAO {
         } catch (RuntimeException e) {
             if (tx.isActive()) tx.rollback();
             throw e;
+        } finally {
+            em.close();
+        }
+    }
+
+    public Usuario autenticar(String email, String passwordPlana) {
+        String passwordHasheada = PasswordUtil.hashearPassword(passwordPlana);
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            return em.createQuery("SELECT u FROM Usuario u WHERE u.email = :email AND u.password = :password", Usuario.class)
+                    .setParameter("email", email)
+                    .setParameter("password", passwordHasheada)
+                    .getSingleResult();
+        } catch (Exception e) {
+            return null;
         } finally {
             em.close();
         }

@@ -1,7 +1,9 @@
 package com.educaparatodos.dao;
 
 import com.educaparatodos.model.Curso;
+import com.educaparatodos.model.Inscripcion;
 import com.educaparatodos.model.NivelDificultad;
+import com.educaparatodos.model.Usuario;
 import com.educaparatodos.util.JPAUtil;
 
 import javax.persistence.EntityManager;
@@ -107,6 +109,60 @@ public class CursoDAO {
         }
     }
 
+    // ---------- INSCRIPCIÓN DE USUARIOS ----------
+
+    /**
+     * Inscribe a un usuario en un curso creando un registro en la entidad de Inscripcion.
+     * Retorna true si se registró con éxito, o false si ya estaba inscrito o hubo un error.
+     */
+    public boolean inscribirUsuario(Long usuarioId, Long cursoId) {
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+
+            Usuario usuario = em.find(Usuario.class, usuarioId);
+            Curso curso = em.find(Curso.class, cursoId);
+
+            if (usuario == null || curso == null) {
+                return false;
+            }
+
+            // 1. Verificamos si ya existe una inscripción previa entre este usuario y este curso
+            Long count = em.createQuery(
+                            "SELECT COUNT(i) FROM Inscripcion i WHERE i.usuario.id = :usuarioId AND i.curso.id = :cursoId",
+                            Long.class)
+                    .setParameter("usuarioId", usuarioId)
+                    .setParameter("cursoId", cursoId)
+                    .getSingleResult();
+
+            if (count > 0) {
+                return false; // Ya está inscrito previamente
+            }
+
+            // 2. Creamos la nueva inscripción
+            Inscripcion nuevaInscripcion = new Inscripcion();
+            nuevaInscripcion.setUsuario(usuario);
+            nuevaInscripcion.setCurso(curso);
+
+            em.persist(nuevaInscripcion);
+
+            // Incrementamos la popularidad del curso al registrar una inscripción
+            curso.setPopularidad(curso.getPopularidad() + 1);
+            em.merge(curso);
+
+            tx.commit();
+            return true;
+
+        } catch (RuntimeException e) {
+            if (tx.isActive()) tx.rollback();
+            e.printStackTrace();
+            return false;
+        } finally {
+            em.close();
+        }
+    }
+
     // ---------- CONSULTAS JPQL (búsqueda por tema, nivel, popularidad) ----------
 
     public List<Curso> buscarPorTema(String tema) {
@@ -167,12 +223,6 @@ public class CursoDAO {
 
     // ---------- OPERACIONES MASIVAS (UPDATE / DELETE) ----------
 
-    /**
-     * UPDATE masivo: sube el nivel de dificultad de todos los cursos de un tema.
-     * executeUpdate() modifica DIRECTAMENTE en la base de datos, sin cargar
-     * las entidades en memoria una por una (mucho más eficiente para lotes grandes).
-     * @return cantidad de filas afectadas
-     */
     public int actualizarNivelPorTema(String tema, NivelDificultad nuevoNivel) {
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
@@ -193,11 +243,6 @@ public class CursoDAO {
         }
     }
 
-    /**
-     * DELETE masivo: elimina todos los cursos con popularidad por debajo
-     * de un umbral (ej. limpiar cursos que nadie toma).
-     * @return cantidad de filas eliminadas
-     */
     public int eliminarCursosPocoPopulares(int umbralPopularidad) {
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
@@ -212,6 +257,17 @@ public class CursoDAO {
         } catch (RuntimeException e) {
             if (tx.isActive()) tx.rollback();
             throw e;
+        } finally {
+            em.close();
+        }
+    }
+    public List<Curso> obtenerCursosPorUsuario(Long usuarioId) {
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            return em.createQuery(
+                            "SELECT i.curso FROM Inscripcion i WHERE i.usuario.id = :usuarioId", Curso.class)
+                    .setParameter("usuarioId", usuarioId)
+                    .getResultList();
         } finally {
             em.close();
         }

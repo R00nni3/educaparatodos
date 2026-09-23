@@ -10,11 +10,28 @@
 <body>
 <!-- Encabezado -->
 <header class="main-header">
-    <h1>EducaParaTodos</h1>
+    <h1><a href="${pageContext.request.contextPath}/index.jsp" style="color: white; text-decoration: none;">EducaParaTodos</a></h1>
     <nav>
+        <%-- Visibles siempre --%>
         <a href="${pageContext.request.contextPath}/index.jsp">Inicio</a>
         <a href="${pageContext.request.contextPath}/cursos">Cursos</a>
-        <a href="${pageContext.request.contextPath}/perfil.jsp">Mi Perfil</a>
+
+        <%-- Lógica según estado de sesión --%>
+        <%
+            if (session.getAttribute("usuarioLogueado") != null) {
+        %>
+        <%-- Sesión activa --%>
+        <a href="${pageContext.request.contextPath}/mi-perfil">Mi Perfil</a>
+        <a href="${pageContext.request.contextPath}/logout">Cerrar Sesión</a>
+        <%
+        } else {
+        %>
+        <%-- Sin sesión --%>
+        <a href="${pageContext.request.contextPath}/login.jsp">Iniciar Sesión</a>
+        <a href="${pageContext.request.contextPath}/registro.jsp">Registrarse</a>
+        <%
+            }
+        %>
     </nav>
 </header>
 

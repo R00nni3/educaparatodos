@@ -11,11 +11,27 @@
 
 <!-- Encabezado unificado -->
 <header class="main-header">
-    <h1>EducaParaTodos</h1>
+    <h1><a href="${pageContext.request.contextPath}/index.jsp" style="color: white; text-decoration: none;">EducaParaTodos</a></h1>
     <nav>
         <a href="${pageContext.request.contextPath}/index.jsp">Inicio</a>
         <a href="${pageContext.request.contextPath}/cursos">Cursos</a>
-        <a href="${pageContext.request.contextPath}/perfil.jsp">Mi Perfil</a>
+
+        <%-- Lógica de verificación de sesión --%>
+        <%
+            if (session.getAttribute("usuarioLogueado") != null) {
+        %>
+        <%-- Usuario CON sesión iniciada --%>
+        <a href="${pageContext.request.contextPath}/mi-perfil">Mi Perfil</a>
+        <a href="${pageContext.request.contextPath}/logout">Cerrar Sesión</a>
+        <%
+        } else {
+        %>
+        <%-- Usuario SIN sesión iniciada --%>
+        <a href="${pageContext.request.contextPath}/login.jsp">Iniciar Sesión</a>
+        <a href="${pageContext.request.contextPath}/registro.jsp">Registrarse</a>
+        <%
+            }
+        %>
     </nav>
 </header>
 
@@ -42,8 +58,8 @@
             </p>
         </div>
 
-        <!-- Botón de acción (Inscribirse) -->
-        <form action="${pageContext.request.contextPath}/cursos" method="post">
+        <!-- Botón de acción con confirmación en JavaScript -->
+        <form action="${pageContext.request.contextPath}/cursos" method="post" onsubmit="return confirm('¿Estás seguro/a de que deseas inscribirte en este curso?');">
             <input type="hidden" name="accion" value="inscribir">
             <input type="hidden" name="cursoId" value="${curso.id}">
             <button type="submit" class="btn-details" style="padding: 0.75rem 2rem; font-size: 1rem; cursor: pointer; border: none;">

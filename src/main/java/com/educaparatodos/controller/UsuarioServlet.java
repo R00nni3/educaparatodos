@@ -3,6 +3,7 @@ package com.educaparatodos.controller;
 import com.educaparatodos.dao.UsuarioDAO;
 import com.educaparatodos.model.RolUsuario;
 import com.educaparatodos.model.Usuario;
+import com.educaparatodos.util.PasswordUtil;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -79,8 +80,7 @@ public class UsuarioServlet extends HttpServlet {
             throws ServletException, IOException {
         List<Usuario> usuarios = usuarioDAO.listarTodos();
         request.setAttribute("usuarios", usuarios);
-        RequestDispatcher rd = request.getRequestDispatcher("/perfil.jsp");
-        rd.forward(request, response);
+        response.sendRedirect(request.getContextPath() + "/mi-perfil");
     }
 
     private void mostrarPerfil(HttpServletRequest request, HttpServletResponse response)
@@ -88,8 +88,7 @@ public class UsuarioServlet extends HttpServlet {
         Long id = Long.parseLong(request.getParameter("id"));
         Usuario usuario = usuarioDAO.buscarPorId(id);
         request.setAttribute("usuario", usuario);
-        RequestDispatcher rd = request.getRequestDispatcher("/perfil.jsp");
-        rd.forward(request, response);
+        response.sendRedirect(request.getContextPath() + "/mi-perfil");
     }
 
     // ---------- ESCRITURA (POST) ----------
@@ -98,7 +97,8 @@ public class UsuarioServlet extends HttpServlet {
         Usuario usuario = new Usuario();
         usuario.setNombre(request.getParameter("nombre"));
         usuario.setEmail(request.getParameter("email"));
-        usuario.setPassword(request.getParameter("password"));
+        String passwordSegura = PasswordUtil.hashearPassword(request.getParameter("password"));
+        usuario.setPassword(passwordSegura);
         String rolParam = request.getParameter("rol");
         usuario.setRol(rolParam != null && !rolParam.isEmpty()
                 ? RolUsuario.valueOf(rolParam)
