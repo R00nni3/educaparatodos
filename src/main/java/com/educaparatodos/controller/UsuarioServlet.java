@@ -3,6 +3,7 @@ package com.educaparatodos.controller;
 import com.educaparatodos.dao.UsuarioDAO;
 import com.educaparatodos.model.RolUsuario;
 import com.educaparatodos.model.Usuario;
+import com.educaparatodos.util.PasswordUtil;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -98,7 +99,8 @@ public class UsuarioServlet extends HttpServlet {
         Usuario usuario = new Usuario();
         usuario.setNombre(request.getParameter("nombre"));
         usuario.setEmail(request.getParameter("email"));
-        usuario.setPassword(request.getParameter("password"));
+        String passwordSegura = PasswordUtil.hashearPassword(request.getParameter("password"));
+        usuario.setPassword(passwordSegura);
         String rolParam = request.getParameter("rol");
         usuario.setRol(rolParam != null && !rolParam.isEmpty()
                 ? RolUsuario.valueOf(rolParam)

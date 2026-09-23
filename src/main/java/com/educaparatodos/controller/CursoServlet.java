@@ -3,6 +3,7 @@ package com.educaparatodos.controller;
 import com.educaparatodos.dao.CursoDAO;
 import com.educaparatodos.model.Curso;
 import com.educaparatodos.model.NivelDificultad;
+import com.educaparatodos.model.Usuario; // Asegúrate de importar tu modelo Usuario
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -10,6 +11,7 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
@@ -51,6 +53,9 @@ public class CursoServlet extends HttpServlet {
         if (accion == null) accion = "";
 
         switch (accion) {
+            case "inscribir":
+                procesarInscripcion(request, response);
+                break;
             case "crear":
                 crear(request, response);
                 break;
@@ -110,7 +115,6 @@ public class CursoServlet extends HttpServlet {
         request.setAttribute("cursos", resultado);
         request.setAttribute("temaBuscado", tema);
         request.setAttribute("nivelBuscado", nivelParam);
-        //request.getRequestDispatcher("cursos.jsp").forward(request, response);
         RequestDispatcher rd = request.getRequestDispatcher("/cursos.jsp");
         rd.forward(request, response);
     }
@@ -124,6 +128,37 @@ public class CursoServlet extends HttpServlet {
     }
 
     // ---------- ESCRITURA (POST) ----------
+
+    private void procesarInscripcion(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            // 1. Obtener el usuario autenticado desde la sesión
+            HttpSession session = request.getSession();
+            Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+
+            // Si no hay sesión iniciada, redirigir al login
+            if (usuario == null) {
+                response.sendRedirect(request.getContextPath() + "/login.jsp");
+                return;
+            }
+
+            // 2. Obtener el ID del curso
+            Long cursoId = Long.parseLong(request.getParameter("cursoId"));
+
+            // 3. Registrar la inscripción utilizando el DAO
+            boolean exito = cursoDAO.inscribirUsuario(usuario.getId(), cursoId);
+
+            if (exito) {
+                response.sendRedirect(request.getContextPath() + "/perfil.jsp?inscripcion=exitoso");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/cursos?accion=detalle&id=" + cursoId + "&error=yaInscrito");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/cursos");
+        }
+    }
 
     private void crear(HttpServletRequest request, HttpServletResponse response) throws IOException {
         Curso curso = new Curso();
