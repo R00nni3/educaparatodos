@@ -1,6 +1,4 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -25,27 +23,27 @@
         <form action="${pageContext.request.contextPath}/usuarios" method="post">
             <input type="hidden" name="accion" value="crear">
 
-            <div class="form-group-aligned">
+            <div class="form-group">
                 <label for="nombre">Nombre Completo</label>
-                <input type="text" id="nombre" name="nombre" placeholder="Juan Pérez" required>
+                <input type="text" id="nombre" name="nombre" class="form-control" placeholder="Juan Pérez" required>
             </div>
 
-            <div class="form-group-aligned">
+            <div class="form-group">
                 <label for="email">Correo Electrónico</label>
-                <input type="email" id="email" name="email" placeholder="ejemplo@correo.com" required>
+                <input type="email" id="email" name="email" class="form-control" placeholder="ejemplo@correo.com" required>
             </div>
 
-            <div class="form-group-aligned">
+            <div class="form-group">
                 <label for="password">Contraseña</label>
-                <input type="password" id="password" name="password" placeholder="••••••••" required>
+                <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
             </div>
 
-            <button type="submit" class="btn-form">Registrarse</button>
+            <button type="submit" class="btn-details">Registrarse</button>
         </form>
 
-        <p style="margin-top: 1.5rem;">
-            ¿Ya tienes cuenta? <a href="${pageContext.request.contextPath}/login.jsp" style="color: #845ec2; font-weight: bold;">Inicia sesión</a>
-        </p>
+        <div class="auth-footer-link">
+            ¿Ya tienes cuenta? <a href="${pageContext.request.contextPath}/login.jsp">Inicia sesión</a>
+        </div>
     </div>
 </div>
 

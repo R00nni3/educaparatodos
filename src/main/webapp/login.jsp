@@ -1,6 +1,9 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html lang="es">
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<!DOCTYPE html>
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Iniciar Sesión - EducaParaTodos</title>
@@ -21,26 +24,28 @@
         <h2>Iniciar Sesión</h2>
 
         <% if ("1".equals(request.getParameter("error"))) { %>
-        <p style="color: red; margin-bottom: 1rem;">Correo o contraseña incorrectos.</p>
+        <div class="alert-message alert-error">
+            Correo o contraseña incorrectos.
+        </div>
         <% } %>
 
         <form action="${pageContext.request.contextPath}/login" method="post">
-            <div class="form-group-aligned">
+            <div class="form-group">
                 <label for="email">Correo Electrónico</label>
-                <input type="email" id="email" name="email" placeholder="ejemplo@correo.com" required>
+                <input type="email" id="email" name="email" class="form-control" placeholder="ejemplo@correo.com" required>
             </div>
 
-            <div class="form-group-aligned">
+            <div class="form-group">
                 <label for="password">Contraseña</label>
-                <input type="password" id="password" name="password" placeholder="••••••••" required>
+                <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
             </div>
 
-            <button type="submit" class="btn-form">Ingresar</button>
+            <button type="submit" class="btn-details">Ingresar</button>
         </form>
 
-        <p style="margin-top: 1.5rem;">
-            ¿No tienes una cuenta? <a href="${pageContext.request.contextPath}/registro.jsp" style="color: #845ec2; font-weight: bold;">Regístrate aquí</a>
-        </p>
+        <div class="auth-footer-link">
+            ¿No tienes una cuenta? <a href="${pageContext.request.contextPath}/registro.jsp">Regístrate aquí</a>
+        </div>
     </div>
 </div>
 
