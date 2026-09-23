@@ -3,7 +3,7 @@ package com.educaparatodos.controller;
 import com.educaparatodos.dao.CursoDAO;
 import com.educaparatodos.model.Curso;
 import com.educaparatodos.model.NivelDificultad;
-import com.educaparatodos.model.Usuario; // Asegúrate de importar tu modelo Usuario
+import com.educaparatodos.model.Usuario;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 
 @WebServlet("/cursos")
@@ -37,6 +36,12 @@ public class CursoServlet extends HttpServlet {
                 break;
             case "populares":
                 mostrarPopulares(request, response);
+                break;
+            case "nuevo":
+                mostrarFormularioNuevo(request, response);
+                break;
+            case "editar":
+                mostrarFormularioEditar(request, response);
                 break;
             case "listar":
             default:
@@ -130,25 +135,55 @@ public class CursoServlet extends HttpServlet {
         rd.forward(request, response);
     }
 
+    private void mostrarFormularioNuevo(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        Usuario usuario = (session != null) ? (Usuario) session.getAttribute("usuarioLogueado") : null;
+
+        // Solo ADMIN puede acceder a crear un nuevo curso
+        if (!esAdmin(usuario)) {
+            response.sendRedirect(request.getContextPath() + "/cursos?error=noAutorizado");
+            return;
+        }
+
+        RequestDispatcher rd = request.getRequestDispatcher("/curso-form.jsp");
+        rd.forward(request, response);
+    }
+
+    private void mostrarFormularioEditar(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession(false);
+        Usuario usuario = (session != null) ? (Usuario) session.getAttribute("usuarioLogueado") : null;
+
+        // ADMIN y PROFESOR pueden acceder a editar un curso
+        if (!esAdmin(usuario) && !esProfesor(usuario)) {
+            response.sendRedirect(request.getContextPath() + "/cursos?error=noAutorizado");
+            return;
+        }
+
+        Long id = Long.parseLong(request.getParameter("id"));
+        Curso curso = cursoDAO.buscarPorId(id);
+        request.setAttribute("curso", curso);
+
+        RequestDispatcher rd = request.getRequestDispatcher("/curso-form.jsp");
+        rd.forward(request, response);
+    }
+
     // ---------- ESCRITURA (POST) ----------
 
     private void procesarInscripcion(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            // 1. Obtener el usuario autenticado desde la sesión
-            HttpSession session = request.getSession();
-            Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+            HttpSession session = request.getSession(false);
+            Usuario usuario = (session != null) ? (Usuario) session.getAttribute("usuarioLogueado") : null;
 
-            // Si no hay sesión iniciada, redirigir al login
             if (usuario == null) {
                 response.sendRedirect(request.getContextPath() + "/login.jsp");
                 return;
             }
 
-            // 2. Obtener el ID del curso
             Long cursoId = Long.parseLong(request.getParameter("cursoId"));
 
-            // 3. Registrar la inscripción utilizando el DAO
             boolean exito = cursoDAO.inscribirUsuario(usuario.getId(), cursoId);
 
             if (exito) {
@@ -176,7 +211,6 @@ public class CursoServlet extends HttpServlet {
 
             Long cursoId = Long.parseLong(request.getParameter("cursoId"));
 
-            // Llamamos al DAO para eliminar la inscripción
             boolean exito = cursoDAO.cancelarInscripcion(usuario.getId(), cursoId);
 
             if (exito) {
@@ -192,6 +226,15 @@ public class CursoServlet extends HttpServlet {
     }
 
     private void crear(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
+        Usuario usuario = (session != null) ? (Usuario) session.getAttribute("usuarioLogueado") : null;
+
+        // SOLO ADMIN PUEDE CREAR
+        if (!esAdmin(usuario)) {
+            response.sendRedirect(request.getContextPath() + "/cursos?error=noAutorizado");
+            return;
+        }
+
         Curso curso = new Curso();
         curso.setTitulo(request.getParameter("titulo"));
         curso.setDescripcion(request.getParameter("descripcion"));
@@ -204,6 +247,15 @@ public class CursoServlet extends HttpServlet {
     }
 
     private void actualizar(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
+        Usuario usuario = (session != null) ? (Usuario) session.getAttribute("usuarioLogueado") : null;
+
+        // ADMIN Y PROFESOR PUEDEN EDITAR
+        if (!esAdmin(usuario) && !esProfesor(usuario)) {
+            response.sendRedirect(request.getContextPath() + "/cursos?error=noAutorizado");
+            return;
+        }
+
         Long id = Long.parseLong(request.getParameter("id"));
         Curso curso = cursoDAO.buscarPorId(id);
         if (curso != null) {
@@ -217,13 +269,30 @@ public class CursoServlet extends HttpServlet {
     }
 
     private void eliminar(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
+        Usuario usuario = (session != null) ? (Usuario) session.getAttribute("usuarioLogueado") : null;
+
+        // SOLO ADMIN PUEDE ELIMINAR
+        if (!esAdmin(usuario)) {
+            response.sendRedirect(request.getContextPath() + "/cursos?error=noAutorizado");
+            return;
+        }
+
         Long id = Long.parseLong(request.getParameter("id"));
         cursoDAO.eliminar(id);
         response.sendRedirect(request.getContextPath() + "/cursos");
     }
 
-    // Operación masiva: sube el nivel de todos los cursos de un tema
+    // Operación masiva: sube el nivel de todos los cursos de un tema (Solo ADMIN)
     private void actualizarNivelMasivo(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
+        Usuario usuario = (session != null) ? (Usuario) session.getAttribute("usuarioLogueado") : null;
+
+        if (!esAdmin(usuario)) {
+            response.sendRedirect(request.getContextPath() + "/cursos?error=noAutorizado");
+            return;
+        }
+
         String tema = request.getParameter("tema");
         NivelDificultad nuevoNivel = NivelDificultad.valueOf(request.getParameter("nuevoNivel"));
         int filas = cursoDAO.actualizarNivelPorTema(tema, nuevoNivel);
@@ -231,11 +300,31 @@ public class CursoServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/cursos");
     }
 
-    // Operación masiva: elimina cursos con poca popularidad
+    // Operación masiva: elimina cursos con poca popularidad (Solo ADMIN)
     private void eliminarPocoPopulares(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
+        Usuario usuario = (session != null) ? (Usuario) session.getAttribute("usuarioLogueado") : null;
+
+        if (!esAdmin(usuario)) {
+            response.sendRedirect(request.getContextPath() + "/cursos?error=noAutorizado");
+            return;
+        }
+
         int umbral = Integer.parseInt(request.getParameter("umbral"));
         int filas = cursoDAO.eliminarCursosPocoPopulares(umbral);
         request.getSession().setAttribute("mensaje", filas + " curso(s) eliminados.");
         response.sendRedirect(request.getContextPath() + "/cursos");
+    }
+
+    // ---------- MÉTODOS AUXILIARES DE VERIFICACIÓN DE ROL ----------
+
+    private boolean esAdmin(Usuario u) {
+        return u != null && u.getRol() != null && u.getRol().toString().equalsIgnoreCase("ADMIN");
+    }
+
+    private boolean esProfesor(Usuario u) {
+        if (u == null || u.getRol() == null) return false;
+        String rol = u.getRol().toString();
+        return "PROFESOR".equalsIgnoreCase(rol) || "INSTRUCTOR".equalsIgnoreCase(rol);
     }
 }

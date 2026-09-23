@@ -5,11 +5,7 @@ import com.educaparatodos.model.Usuario;
 import com.educaparatodos.util.JPAUtil;
 import com.educaparatodos.util.PasswordUtil;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.EntityTransaction;
-import javax.persistence.NoResultException;
-import javax.persistence.TypedQuery;
+import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
 
@@ -131,25 +127,79 @@ public class UsuarioDAO {
         }
     }
 
-    // ---------- OPERACIONES MASIVAS (UPDATE / DELETE) ----------
-
     /**
-     * UPDATE masivo: asciende de rol a todos los estudiantes registrados
-     * antes de una fecha dada (ej. usuarios "veteranos" pasan a instructor).
-     * @return cantidad de filas afectadas
+     * Cambia el rol de un usuario específico a partir de su ID.
      */
-    public int actualizarRolMasivo(RolUsuario rolActual, RolUsuario nuevoRol, Date registradosAntesDe) {
+    public boolean cambiarRolUsuario(Long usuarioId, String nuevoRol) {
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
-            int filasAfectadas = em.createQuery(
-                            "UPDATE Usuario u SET u.rol = :nuevoRol " +
-                                    "WHERE u.rol = :rolActual AND u.fechaRegistro < :fecha")
-                    .setParameter("nuevoRol", nuevoRol)
-                    .setParameter("rolActual", rolActual)
-                    .setParameter("fecha", registradosAntesDe)
-                    .executeUpdate();
+            Usuario usuario = em.find(Usuario.class, usuarioId);
+            if (usuario != null) {
+                RolUsuario rolEnum = null;
+
+                // Intenta convertir directamente o busca coincidencia en el Enum
+                for (RolUsuario r : RolUsuario.values()) {
+                    if (r.name().equalsIgnoreCase(nuevoRol) ||
+                            (nuevoRol.equalsIgnoreCase("PROFESOR") && r.name().equalsIgnoreCase("INSTRUCTOR")) ||
+                            (nuevoRol.equalsIgnoreCase("INSTRUCTOR") && r.name().equalsIgnoreCase("PROFESOR"))) {
+                        rolEnum = r;
+                        break;
+                    }
+                }
+
+                if (rolEnum != null) {
+                    usuario.setRol(rolEnum);
+                    em.merge(usuario);
+                    tx.commit();
+                    return true;
+                }
+            }
+            return false;
+        } catch (RuntimeException e) {
+            if (tx.isActive()) tx.rollback();
+            e.printStackTrace();
+            return false;
+        } finally {
+            em.close();
+        }
+    }
+
+    // ---------- OPERACIONES MASIVAS (UPDATE / DELETE) ----------
+
+    /**
+     * UPDATE masivo: asciende a INSTRUCTOR a todos los estudiantes cuyo email
+     * pertenezca a CUALQUIERA de los dominios indicados. Construye dinámicamente
+     * una condición OR con un LIKE por cada dominio, en una sola consulta.
+     * @return cantidad de filas afectadas
+     */
+    public int ascenderPorDominios(List<String> dominios) {
+        if (dominios == null || dominios.isEmpty()) {
+            return 0;
+        }
+
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+
+            StringBuilder jpql = new StringBuilder(
+                    "UPDATE Usuario u SET u.rol = :nuevoRol WHERE u.rol = :rolActual AND (");
+            for (int i = 0; i < dominios.size(); i++) {
+                if (i > 0) jpql.append(" OR ");
+                jpql.append("u.email LIKE :dominio").append(i);
+            }
+            jpql.append(")");
+
+            Query query = em.createQuery(jpql.toString());
+            query.setParameter("nuevoRol", RolUsuario.INSTRUCTOR);
+            query.setParameter("rolActual", RolUsuario.ESTUDIANTE);
+            for (int i = 0; i < dominios.size(); i++) {
+                query.setParameter("dominio" + i, "%@" + dominios.get(i).trim());
+            }
+
+            int filasAfectadas = query.executeUpdate();
             tx.commit();
             return filasAfectadas;
         } catch (RuntimeException e) {
@@ -161,17 +211,21 @@ public class UsuarioDAO {
     }
 
     /**
-     * DELETE masivo: elimina usuarios registrados antes de una fecha dada
-     * (ej. limpiar cuentas de prueba antiguas nunca activadas).
+     * DELETE masivo: elimina estudiantes que NO tienen ninguna inscripción
+     * Y que se registraron antes de la fecha indicada (evita borrar cuentas
+     * recién creadas que todavía no alcanzan a inscribirse en nada).
      * @return cantidad de filas eliminadas
      */
-    public int eliminarUsuariosRegistradosAntesDe(Date fecha) {
+    public int eliminarEstudiantesSinInscripcionAntesDe(Date fecha) {
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
             int filasEliminadas = em.createQuery(
-                            "DELETE FROM Usuario u WHERE u.fechaRegistro < :fecha")
+                            "DELETE FROM Usuario u WHERE u.rol = :rol " +
+                                    "AND u.fechaRegistro < :fecha " +
+                                    "AND u.id NOT IN (SELECT DISTINCT i.usuario.id FROM Inscripcion i)")
+                    .setParameter("rol", RolUsuario.ESTUDIANTE)
                     .setParameter("fecha", fecha)
                     .executeUpdate();
             tx.commit();

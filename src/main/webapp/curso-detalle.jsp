@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.educaparatodos.model.Usuario" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="es">
@@ -16,17 +17,14 @@
         <a href="${pageContext.request.contextPath}/index.jsp">Inicio</a>
         <a href="${pageContext.request.contextPath}/cursos">Cursos</a>
 
-        <%-- Lógica de verificación de sesión --%>
         <%
             if (session.getAttribute("usuarioLogueado") != null) {
         %>
-        <%-- Usuario CON sesión iniciada --%>
         <a href="${pageContext.request.contextPath}/mi-perfil">Mi Perfil</a>
         <a href="${pageContext.request.contextPath}/logout">Cerrar Sesión</a>
         <%
         } else {
         %>
-        <%-- Usuario SIN sesión iniciada --%>
         <a href="${pageContext.request.contextPath}/login.jsp">Iniciar Sesión</a>
         <a href="${pageContext.request.contextPath}/registro.jsp">Registrarse</a>
         <%
@@ -58,14 +56,18 @@
             </p>
         </div>
 
-        <%-- Alerta si intenta inscribirse de nuevo --%>
+        <%-- Alertas --%>
         <% if ("yaInscrito".equals(request.getParameter("error"))) { %>
-        <div class="alert-message alert-error">
+        <div class="alert-message alert-error" style="margin-bottom: 1.5rem;">
             ¡Ya te encuentras inscrito en este curso! Puedes revisarlo en tu perfil.
+        </div>
+        <% } else if ("noAutorizado".equals(request.getParameter("error"))) { %>
+        <div class="alert-message alert-error" style="margin-bottom: 1.5rem;">
+            No tienes permisos suficientes para realizar esta acción.
         </div>
         <% } %>
 
-        <!-- Botón de acción con confirmación en JavaScript -->
+        <!-- Botón de Inscripción -->
         <form action="${pageContext.request.contextPath}/cursos" method="post" onsubmit="return confirm('¿Estás seguro/a de que deseas inscribirte en este curso?');">
             <input type="hidden" name="accion" value="inscribir">
             <input type="hidden" name="cursoId" value="${curso.id}">
@@ -74,10 +76,41 @@
             </button>
         </form>
 
+        <%-- Botones de Edición / Eliminación según el Rol --%>
+        <%
+            Usuario uLog = (Usuario) session.getAttribute("usuarioLogueado");
+            if (uLog != null) {
+                String rol = uLog.getRol() != null ? uLog.getRol().toString().toUpperCase() : "";
+                boolean esAdmin = "ADMIN".equals(rol);
+                boolean esProfe = "PROFESOR".equals(rol) || "INSTRUCTOR".equals(rol);
+
+                if (esAdmin || esProfe) {
+        %>
+        <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #eee; display: flex; gap: 10px;">
+            <%-- ADMIN Y PROFESOR PUEDEN EDITAR --%>
+            <a href="${pageContext.request.contextPath}/cursos?accion=editar&id=${curso.id}" class="btn-details" style="background-color: #d97706; text-decoration: none; display: inline-block;">
+                ✏️ Editar Curso
+            </a>
+
+            <%-- SOLO ADMIN PUEDE ELIMINAR --%>
+            <% if (esAdmin) { %>
+            <form action="${pageContext.request.contextPath}/cursos" method="post" onsubmit="return confirm('¿Estás seguro/a de eliminar permanentemente este curso?');" style="margin: 0;">
+                <input type="hidden" name="accion" value="eliminar">
+                <input type="hidden" name="id" value="${curso.id}">
+                <button type="submit" class="btn-details" style="background-color: #a83232; border: none; cursor: pointer;">
+                    🗑️ Eliminar Curso
+                </button>
+            </form>
+            <% } %>
+        </div>
+        <%
+                }
+            }
+        %>
+
     </div>
 </div>
 
-<!-- Footer unificado -->
 <footer>
     <p>&copy; 2026 EducaParaTodos. Todos los derechos reservados.</p>
 </footer>
