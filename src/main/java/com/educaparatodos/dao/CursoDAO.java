@@ -163,6 +163,66 @@ public class CursoDAO {
         }
     }
 
+    public boolean estaInscrito(Long usuarioId, Long cursoId) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            Long count = em.createQuery(
+                            "SELECT COUNT(i) FROM Inscripcion i WHERE i.usuario.id = :usuarioId AND i.curso.id = :cursoId",
+                            Long.class)
+                    .setParameter("usuarioId", usuarioId)
+                    .setParameter("cursoId", cursoId)
+                    .getSingleResult();
+            return count > 0;
+        } finally {
+            em.close();
+        }
+    }
+
+    // -- Cancelar subscripción --
+
+    public boolean cancelarInscripcion(Long usuarioId, Long cursoId) {
+        EntityManager em = emf.createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+
+            // 1. Buscamos la inscripción correspondiente
+            TypedQuery<Inscripcion> query = em.createQuery(
+                    "SELECT i FROM Inscripcion i WHERE i.usuario.id = :usuarioId AND i.curso.id = :cursoId",
+                    Inscripcion.class);
+            query.setParameter("usuarioId", usuarioId);
+            query.setParameter("cursoId", cursoId);
+
+            List<Inscripcion> resultados = query.getResultList();
+
+            if (resultados.isEmpty()) {
+                return false; // No se encontró la inscripción
+            }
+
+            Inscripcion inscripcion = resultados.get(0);
+            Curso curso = inscripcion.getCurso();
+
+            // 2. Eliminamos la inscripción de la base de datos
+            em.remove(inscripcion);
+
+            // 3. Decrementamos la popularidad del curso (sin bajar de 0)
+            if (curso != null && curso.getPopularidad() > 0) {
+                curso.setPopularidad(curso.getPopularidad() - 1);
+                em.merge(curso);
+            }
+
+            tx.commit();
+            return true;
+
+        } catch (RuntimeException e) {
+            if (tx.isActive()) tx.rollback();
+            e.printStackTrace();
+            return false;
+        } finally {
+            em.close();
+        }
+    }
+
     // ---------- CONSULTAS JPQL (búsqueda por tema, nivel, popularidad) ----------
 
     public List<Curso> buscarPorTema(String tema) {
