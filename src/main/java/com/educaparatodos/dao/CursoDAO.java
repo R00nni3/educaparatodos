@@ -11,6 +11,7 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.TypedQuery;
 import java.util.List;
+import java.util.Collections;
 
 public class CursoDAO {
 
@@ -254,10 +255,29 @@ public class CursoDAO {
     public List<Curso> buscarMasPopulares(int limite) {
         EntityManager em = emf.createEntityManager();
         try {
+            // 1. Consultar los cursos ordenados descendentemente por popularidad
             TypedQuery<Curso> query = em.createQuery(
                     "SELECT c FROM Curso c ORDER BY c.popularidad DESC", Curso.class);
             query.setMaxResults(limite);
-            return query.getResultList();
+            List<Curso> destacados = query.getResultList();
+
+            if (destacados.isEmpty()) {
+                return destacados;
+            }
+
+            // 2. Si el curso con más popularidad tiene 0 inscripciones, significa que todos están en 0
+            if (destacados.get(0).getPopularidad() == 0) {
+                // Traemos todos los cursos existentes
+                List<Curso> todos = em.createQuery("SELECT c FROM Curso c", Curso.class).getResultList();
+
+                // Los desordenamos/mezclamos al azar
+                Collections.shuffle(todos);
+
+                // Retornamos los primeros 'limite' elementos (o menos si hay menos de 3 cursos)
+                return todos.subList(0, Math.min(limite, todos.size()));
+            }
+
+            return destacados;
         } finally {
             em.close();
         }
