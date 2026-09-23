@@ -58,6 +58,13 @@
             </p>
         </div>
 
+        <%-- Alerta si intenta inscribirse de nuevo --%>
+        <% if ("yaInscrito".equals(request.getParameter("error"))) { %>
+        <div class="alert-message alert-error">
+            ¡Ya te encuentras inscrito en este curso! Puedes revisarlo en tu perfil.
+        </div>
+        <% } %>
+
         <!-- Botón de acción con confirmación en JavaScript -->
         <form action="${pageContext.request.contextPath}/cursos" method="post" onsubmit="return confirm('¿Estás seguro/a de que deseas inscribirte en este curso?');">
             <input type="hidden" name="accion" value="inscribir">

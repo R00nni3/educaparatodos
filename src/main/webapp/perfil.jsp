@@ -43,6 +43,17 @@
     %>
     <h3>Mi Perfil</h3>
 
+    <%-- 1. ALERTA DE ÉXITO O ERROR AL CANCELAR --%>
+    <% if ("exitosa".equals(request.getParameter("cancelacion"))) { %>
+    <div class="alert-message alert-success" style="margin-bottom: 1.5rem;">
+        Has anulado tu inscripción al curso correctamente.
+    </div>
+    <% } else if ("cancelacionFallida".equals(request.getParameter("error"))) { %>
+    <div class="alert-message alert-error" style="margin-bottom: 1.5rem;">
+        No se pudo anular la inscripción al curso.
+    </div>
+    <% } %>
+
     <div class="profile-card">
         <div class="profile-info-grid">
             <div class="profile-info-item">
@@ -75,6 +86,15 @@
                 <p><%= c.getDescripcion() != null ? c.getDescripcion() : "Sin descripción disponible." %></p>
             </div>
             <small style="color: #777;">Tema: <%= c.getTema() %></small>
+
+            <%-- 2. BOTÓN PARA ANULAR INSCRIPCIÓN --%>
+            <form action="${pageContext.request.contextPath}/cursos" method="post" onsubmit="return confirm('¿Estás seguro/a de que deseas anular tu inscripción a este curso?');" style="margin-top: 1rem;">
+                <input type="hidden" name="accion" value="cancelarInscripcion">
+                <input type="hidden" name="cursoId" value="<%= c.getId() %>">
+                <button type="submit" class="btn-details" style="background-color: #a83232; color: white; border: none; padding: 0.5rem 1rem; cursor: pointer; border-radius: 6px; width: 100%;">
+                    Anular Inscripción
+                </button>
+            </form>
         </div>
         <% } %>
     </div>

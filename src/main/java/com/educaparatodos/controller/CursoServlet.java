@@ -56,6 +56,9 @@ public class CursoServlet extends HttpServlet {
             case "inscribir":
                 procesarInscripcion(request, response);
                 break;
+            case "cancelarInscripcion":
+                procesarCancelacionInscripcion(request, response);
+                break;
             case "crear":
                 crear(request, response);
                 break;
@@ -157,6 +160,34 @@ public class CursoServlet extends HttpServlet {
         } catch (Exception e) {
             e.printStackTrace();
             response.sendRedirect(request.getContextPath() + "/cursos");
+        }
+    }
+
+    private void procesarCancelacionInscripcion(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        try {
+            HttpSession session = request.getSession(false);
+            Usuario usuario = (session != null) ? (Usuario) session.getAttribute("usuarioLogueado") : null;
+
+            if (usuario == null) {
+                response.sendRedirect(request.getContextPath() + "/login.jsp");
+                return;
+            }
+
+            Long cursoId = Long.parseLong(request.getParameter("cursoId"));
+
+            // Llamamos al DAO para eliminar la inscripción
+            boolean exito = cursoDAO.cancelarInscripcion(usuario.getId(), cursoId);
+
+            if (exito) {
+                response.sendRedirect(request.getContextPath() + "/mi-perfil?cancelacion=exitosa");
+            } else {
+                response.sendRedirect(request.getContextPath() + "/mi-perfil?error=cancelacionFallida");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect(request.getContextPath() + "/mi-perfil");
         }
     }
 
