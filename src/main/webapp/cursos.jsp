@@ -1,4 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ page import="com.educaparatodos.model.Usuario" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="es">
@@ -41,9 +42,27 @@
     <div class="container">
         <h3>Catálogo de Cursos</h3>
 
+        <%-- Alerta si intenta acceder a una acción sin permisos --%>
+        <% if ("noAutorizado".equals(request.getParameter("error"))) { %>
+        <div class="alert-message alert-error" style="margin-bottom: 1.5rem;">
+            No tienes permisos suficientes para realizar esta acción.
+        </div>
+        <% } %>
+
+        <%-- Botón disponible SOLO para el ADMIN --%>
+        <%
+            Usuario uLog = (Usuario) session.getAttribute("usuarioLogueado");
+            if (uLog != null && uLog.getRol() != null && "ADMIN".equalsIgnoreCase(uLog.getRol().toString())) {
+        %>
+        <a href="${pageContext.request.contextPath}/cursos?accion=nuevo" class="btn-details" style="display: inline-block; margin-bottom: 1.5rem; background-color: #2b78e4; text-decoration: none;">
+            + Crear Nuevo Curso
+        </a>
+        <% } %>
+
         <!-- Buscador-->
         <form action="${pageContext.request.contextPath}/cursos" method="get" class="search-form">
-            <input type="text" name="tema" placeholder="Buscar por tema...">
+            <input type="hidden" name="accion" value="buscar">
+            <input type="text" name="tema" placeholder="Buscar por tema..." value="${temaBuscado}">
             <button type="submit" class="btn-details">Filtrar</button>
         </form>
 

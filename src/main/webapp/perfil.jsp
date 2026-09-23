@@ -13,21 +13,24 @@
 <header class="main-header">
     <h1><a href="${pageContext.request.contextPath}/index.jsp" style="color: white; text-decoration: none;">EducaParaTodos</a></h1>
     <nav>
-        <%-- Visibles siempre --%>
         <a href="${pageContext.request.contextPath}/index.jsp">Inicio</a>
         <a href="${pageContext.request.contextPath}/cursos">Cursos</a>
 
         <%-- Lógica según estado de sesión --%>
         <%
-            if (session.getAttribute("usuarioLogueado") != null) {
+            Usuario uLog = (Usuario) session.getAttribute("usuarioLogueado");
+            if (uLog != null) {
+                String rolStr = uLog.getRol() != null ? uLog.getRol().toString().toUpperCase() : "";
+                boolean esAdmin = "ADMIN".equals(rolStr);
         %>
-        <%-- Sesión activa --%>
         <a href="${pageContext.request.contextPath}/mi-perfil">Mi Perfil</a>
+        <% if (esAdmin) { %>
+        <a href="${pageContext.request.contextPath}/usuarios?accion=listarAdmin" style="color: #ffd700; font-weight: bold;">Gestión Usuarios</a>
+        <% } %>
         <a href="${pageContext.request.contextPath}/logout">Cerrar Sesión</a>
         <%
         } else {
         %>
-        <%-- Sin sesión --%>
         <a href="${pageContext.request.contextPath}/login.jsp">Iniciar Sesión</a>
         <a href="${pageContext.request.contextPath}/registro.jsp">Registrarse</a>
         <%
@@ -40,10 +43,13 @@
     <%
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
         if (usuario != null) {
+            String rol = usuario.getRol() != null ? usuario.getRol().toString().toUpperCase() : "";
+            boolean esAdmin = "ADMIN".equals(rol);
+            boolean esProfesor = "PROFESOR".equals(rol) || "INSTRUCTOR".equals(rol);
     %>
     <h3>Mi Perfil</h3>
 
-    <%-- 1. ALERTA DE ÉXITO O ERROR AL CANCELAR --%>
+    <%-- ALERTAS DE ACCIÓN --%>
     <% if ("exitosa".equals(request.getParameter("cancelacion"))) { %>
     <div class="alert-message alert-success" style="margin-bottom: 1.5rem;">
         Has anulado tu inscripción al curso correctamente.
@@ -66,12 +72,21 @@
             </div>
             <div class="profile-info-item">
                 <label>Rol</label>
-                <span><%= usuario.getRol() %></span>
+                <span><strong><%= usuario.getRol() %></strong></span>
             </div>
         </div>
+
+        <%-- ACCIONES DE ADMINISTRADOR --%>
+        <% if (esAdmin) { %>
+        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #eee;">
+            <a href="${pageContext.request.contextPath}/usuarios?accion=listarAdmin" class="btn-details" style="background-color: #2563eb; color: white; text-decoration: none; display: inline-block;">
+                ⚙️ Administrar Usuarios y Roles
+            </a>
+        </div>
+        <% } %>
     </div>
 
-    <h3>Mis Cursos Inscritos</h3>
+    <h3>Mis Cursos</h3>
 
     <%
         List<Curso> misCursos = (List<Curso>) request.getAttribute("misCursos");
@@ -87,20 +102,32 @@
             </div>
             <small style="color: #777;">Tema: <%= c.getTema() %></small>
 
-            <%-- 2. BOTÓN PARA ANULAR INSCRIPCIÓN --%>
-            <form action="${pageContext.request.contextPath}/cursos" method="post" onsubmit="return confirm('¿Estás seguro/a de que deseas anular tu inscripción a este curso?');" style="margin-top: 1rem;">
-                <input type="hidden" name="accion" value="cancelarInscripcion">
-                <input type="hidden" name="cursoId" value="<%= c.getId() %>">
-                <button type="submit" class="btn-details" style="background-color: #a83232; color: white; border: none; padding: 0.5rem 1rem; cursor: pointer; border-radius: 6px; width: 100%;">
-                    Anular Inscripción
-                </button>
-            </form>
+            <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 8px;">
+                <a href="${pageContext.request.contextPath}/cursos?accion=detalle&id=<%= c.getId() %>" class="btn-details" style="text-align: center; text-decoration: none;">
+                    Ver Detalle
+                </a>
+
+                <%-- BOTÓN DE EDICIÓN VISIBLE PARA PROFESOR/INSTRUCTOR Y ADMIN --%>
+                <% if (esProfesor || esAdmin) { %>
+                <a href="${pageContext.request.contextPath}/cursos?accion=editar&id=<%= c.getId() %>" class="btn-details" style="background-color: #d97706; text-align: center; text-decoration: none;">
+                    ✏️ Editar Curso
+                </a>
+                <% } %>
+
+                <form action="${pageContext.request.contextPath}/cursos" method="post" onsubmit="return confirm('¿Estás seguro/a de que deseas anular tu inscripción a este curso?');" style="margin: 0;">
+                    <input type="hidden" name="accion" value="cancelarInscripcion">
+                    <input type="hidden" name="cursoId" value="<%= c.getId() %>">
+                    <button type="submit" class="btn-details" style="background-color: #a83232; color: white; border: none; padding: 0.5rem 1rem; cursor: pointer; border-radius: 6px; width: 100%;">
+                        Anular Inscripción
+                    </button>
+                </form>
+            </div>
         </div>
         <% } %>
     </div>
     <% } else { %>
     <div class="profile-card" style="text-align: center; color: #666;">
-        <p>Aún no te has inscrito a ningún curso.</p>
+        <p>Aún no tienes cursos asignados ni inscritos.</p>
         <a href="${pageContext.request.contextPath}/cursos" class="btn-details" style="display: inline-block; margin-top: 10px;">Explorar Catálogo</a>
     </div>
     <% } %>
