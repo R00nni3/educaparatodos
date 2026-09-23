@@ -182,6 +182,139 @@ body {
     color: white;
 }
 
+/* --- COMPONENTES DE AUTENTICACIÓN Y FORMULARIOS --- */
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem 1rem;
+}
+
+.auth-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 8px 20px rgba(74, 45, 64, 0.08);
+    border: 1px solid #f0e6eb;
+}
+
+.auth-card h2 {
+    color: #4a2d40;
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-size: 1.75rem;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-weight: 600;
+    color: #4a2d40;
+    font-size: 0.9rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #dcd6d9;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #6b3e5a;
+    box-shadow: 0 0 0 3px rgba(107, 62, 90, 0.15);
+}
+
+.btn-block {
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.auth-footer-link {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.auth-footer-link a {
+    color: #845ec2;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.auth-footer-link a:hover {
+    text-decoration: underline;
+}
+
+/* --- ESTILOS DEL PERFIL Y TARJETAS DE DATOS --- */
+.profile-card {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 2rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+    border: 1px solid #eee;
+    margin-bottom: 2rem;
+}
+
+.profile-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.profile-info-item {
+    background: #fcf8f9;
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid #6b3e5a;
+}
+
+.profile-info-item label {
+    display: block;
+    font-size: 0.8rem;
+    color: #777;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.profile-info-item span {
+    font-size: 1.1rem;
+    color: #4a2d40;
+    font-weight: 600;
+}
+
+.alert-message {
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    margin-bottom: 1.25rem;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.alert-error {
+    background-color: #fde8e8;
+    color: #9b1c1c;
+    border: 1px solid #f8b4b4;
+}
+
+.alert-success {
+    background-color: #def7ec;
+    color: #03543f;
+    border: 1px solid #84e1bc;
+}
+
 /* Footer anclado abajo con el tono armonizado */
 footer {
     background-color: #4a2d40;
@@ -196,3 +329,4 @@ footer p {
     margin: 0;
     font-size: 0.9rem;
 }
+

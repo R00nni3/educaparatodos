@@ -39,7 +39,7 @@ public class LoginServlet extends HttpServlet {
             session.setAttribute("usuarioLogueado", usuario);
 
             // Redirigir a la lista de cursos
-            response.sendRedirect(request.getContextPath() + "/perfil.jsp");
+            response.sendRedirect(request.getContextPath() + "/mi-perfil");
         } else {
             // Credenciales incorrectas: Volver al login con error
             response.sendRedirect(request.getContextPath() + "/login.jsp?error=1");

@@ -11,11 +11,25 @@
 
 <!-- Encabezado unificado -->
 <header class="main-header">
-    <h1>EducaParaTodos</h1>
+    <h1><a href="${pageContext.request.contextPath}/cursos" style="color: white; text-decoration: none;">EducaParaTodos</a></h1>
     <nav>
-        <a href="${pageContext.request.contextPath}/index.jsp">Inicio</a>
         <a href="${pageContext.request.contextPath}/cursos">Cursos</a>
-        <a href="${pageContext.request.contextPath}/perfil.jsp">Mi Perfil</a>
+
+        <%-- Lógica de verificación de sesión --%>
+        <%
+            if (session.getAttribute("usuarioLogueado") != null) {
+        %>
+        <%-- Usuario CON sesión iniciada --%>
+        <a href="${pageContext.request.contextPath}/mi-perfil">Mi Perfil</a>
+        <%
+        } else {
+        %>
+        <%-- Usuario SIN sesión iniciada --%>
+        <a href="${pageContext.request.contextPath}/login.jsp">Iniciar Sesión</a>
+        <a href="${pageContext.request.contextPath}/registro.jsp">Registrarse</a>
+        <%
+            }
+        %>
     </nav>
 </header>
 

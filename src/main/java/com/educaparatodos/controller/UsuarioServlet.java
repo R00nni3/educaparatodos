@@ -80,8 +80,7 @@ public class UsuarioServlet extends HttpServlet {
             throws ServletException, IOException {
         List<Usuario> usuarios = usuarioDAO.listarTodos();
         request.setAttribute("usuarios", usuarios);
-        RequestDispatcher rd = request.getRequestDispatcher("/perfil.jsp");
-        rd.forward(request, response);
+        response.sendRedirect(request.getContextPath() + "/mi-perfil");
     }
 
     private void mostrarPerfil(HttpServletRequest request, HttpServletResponse response)
@@ -89,8 +88,7 @@ public class UsuarioServlet extends HttpServlet {
         Long id = Long.parseLong(request.getParameter("id"));
         Usuario usuario = usuarioDAO.buscarPorId(id);
         request.setAttribute("usuario", usuario);
-        RequestDispatcher rd = request.getRequestDispatcher("/perfil.jsp");
-        rd.forward(request, response);
+        response.sendRedirect(request.getContextPath() + "/mi-perfil");
     }
 
     // ---------- ESCRITURA (POST) ----------

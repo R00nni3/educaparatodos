@@ -149,7 +149,7 @@ public class CursoServlet extends HttpServlet {
             boolean exito = cursoDAO.inscribirUsuario(usuario.getId(), cursoId);
 
             if (exito) {
-                response.sendRedirect(request.getContextPath() + "/perfil.jsp?inscripcion=exitoso");
+                response.sendRedirect(request.getContextPath() + "/mi-perfil?inscripcion=exitoso");
             } else {
                 response.sendRedirect(request.getContextPath() + "/cursos?accion=detalle&id=" + cursoId + "&error=yaInscrito");
             }

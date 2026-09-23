@@ -261,4 +261,15 @@ public class CursoDAO {
             em.close();
         }
     }
+    public List<Curso> obtenerCursosPorUsuario(Long usuarioId) {
+        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        try {
+            return em.createQuery(
+                            "SELECT i.curso FROM Inscripcion i WHERE i.usuario.id = :usuarioId", Curso.class)
+                    .setParameter("usuarioId", usuarioId)
+                    .getResultList();
+        } finally {
+            em.close();
+        }
+    }
 }

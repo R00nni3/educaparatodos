@@ -3,32 +3,49 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Iniciar Sesión - Educa Para Todos</title>
+    <title>Iniciar Sesión - EducaParaTodos</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/styles.css">
 </head>
 <body>
-<h2>Iniciar Sesión</h2>
+<header class="main-header">
+    <h1><a href="${pageContext.request.contextPath}/index.jsp" style="color: white; text-decoration: none;">EducaParaTodos</a></h1>
+    <nav>
+        <a href="${pageContext.request.contextPath}/index.jsp">Inicio</a>
+        <a href="${pageContext.request.contextPath}/cursos">Cursos</a>
+        <a href="${pageContext.request.contextPath}/registro.jsp">Registrarse</a>
+    </nav>
+</header>
 
-<%-- Si hay un mensaje de error (ej. credenciales inválidas), lo mostramos aquí --%>
-<%
-    String error = request.getParameter("error");
-    if (error != null) {
-%>
-<p style="color: red;">Error al iniciar sesión. Por favor, intenta de nuevo.</p>
-<% } %>
+<div class="main-content">
+    <div class="form-container-left">
+        <h2>Iniciar Sesión</h2>
 
-<%-- El formulario apuntará a un futuro LoginServlet --%>
-<form action="${pageContext.request.contextPath}/login" method="post">
-    <label for="email">Correo electrónico:</label><br>
-    <input type="email" id="email" name="email" required><br><br>
+        <% if ("1".equals(request.getParameter("error"))) { %>
+        <p style="color: red; margin-bottom: 1rem;">Correo o contraseña incorrectos.</p>
+        <% } %>
 
-    <label for="password">Contraseña:</label><br>
-    <input type="password" id="password" name="password" required><br><br>
+        <form action="${pageContext.request.contextPath}/login" method="post">
+            <div class="form-group-aligned">
+                <label for="email">Correo Electrónico</label>
+                <input type="email" id="email" name="email" placeholder="ejemplo@correo.com" required>
+            </div>
 
-    <button type="submit">Ingresar</button>
-</form>
+            <div class="form-group-aligned">
+                <label for="password">Contraseña</label>
+                <input type="password" id="password" name="password" placeholder="••••••••" required>
+            </div>
 
-<br>
-<a href="${pageContext.request.contextPath}/registro.jsp">¿No tienes cuenta? Regístrate aquí</a>
-<a href="${pageContext.request.contextPath}/cursos">Volver a los cursos</a>
+            <button type="submit" class="btn-form">Ingresar</button>
+        </form>
+
+        <p style="margin-top: 1.5rem;">
+            ¿No tienes una cuenta? <a href="${pageContext.request.contextPath}/registro.jsp" style="color: #845ec2; font-weight: bold;">Regístrate aquí</a>
+        </p>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2026 EducaParaTodos. Todos los derechos reservados.</p>
+</footer>
 </body>
 </html>
