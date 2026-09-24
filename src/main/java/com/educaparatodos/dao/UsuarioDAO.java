@@ -13,7 +13,7 @@ public class UsuarioDAO {
 
     private final EntityManagerFactory emf = JPAUtil.getEntityManagerFactory();
 
-    // ---------- CRUD BÁSICO ----------
+    // ---------- CRUD BÁSICO Y AUTENTICACIÓN ----------
 
     public Usuario crear(Usuario usuario) {
         EntityManager em = emf.createEntityManager();
@@ -33,14 +33,14 @@ public class UsuarioDAO {
 
     public Usuario autenticar(String email, String passwordPlana) {
         String passwordHasheada = PasswordUtil.hashearPassword(passwordPlana);
-        EntityManager em = JPAUtil.getEntityManagerFactory().createEntityManager();
+        EntityManager em = emf.createEntityManager();
         try {
-            return em.createQuery("SELECT u FROM Usuario u WHERE u.email = :email AND u.password = :password", Usuario.class)
+            List<Usuario> resultados = em.createQuery(
+                            "SELECT u FROM Usuario u WHERE u.email = :email AND u.password = :password", Usuario.class)
                     .setParameter("email", email)
                     .setParameter("password", passwordHasheada)
-                    .getSingleResult();
-        } catch (Exception e) {
-            return null;
+                    .getResultList();
+            return resultados.isEmpty() ? null : resultados.get(0);
         } finally {
             em.close();
         }
@@ -79,22 +79,6 @@ public class UsuarioDAO {
         }
     }
 
-    public Usuario actualizar(Usuario usuario) {
-        EntityManager em = emf.createEntityManager();
-        EntityTransaction tx = em.getTransaction();
-        try {
-            tx.begin();
-            Usuario actualizado = em.merge(usuario);
-            tx.commit();
-            return actualizado;
-        } catch (RuntimeException e) {
-            if (tx.isActive()) tx.rollback();
-            throw e;
-        } finally {
-            em.close();
-        }
-    }
-
     public void eliminar(Long id) {
         EntityManager em = emf.createEntityManager();
         EntityTransaction tx = em.getTransaction();
@@ -113,19 +97,7 @@ public class UsuarioDAO {
         }
     }
 
-    // ---------- CONSULTAS JPQL ----------
-
-    public List<Usuario> buscarPorRol(RolUsuario rol) {
-        EntityManager em = emf.createEntityManager();
-        try {
-            TypedQuery<Usuario> query = em.createQuery(
-                    "SELECT u FROM Usuario u WHERE u.rol = :rol", Usuario.class);
-            query.setParameter("rol", rol);
-            return query.getResultList();
-        } finally {
-            em.close();
-        }
-    }
+    // ---------- ACCIONES PUNTUALES ----------
 
     /**
      * Cambia el rol de un usuario específico a partir de su ID.
@@ -139,7 +111,6 @@ public class UsuarioDAO {
             if (usuario != null) {
                 RolUsuario rolEnum = null;
 
-                // Intenta convertir directamente o busca coincidencia en el Enum
                 for (RolUsuario r : RolUsuario.values()) {
                     if (r.name().equalsIgnoreCase(nuevoRol) ||
                             (nuevoRol.equalsIgnoreCase("PROFESOR") && r.name().equalsIgnoreCase("INSTRUCTOR")) ||
@@ -151,7 +122,6 @@ public class UsuarioDAO {
 
                 if (rolEnum != null) {
                     usuario.setRol(rolEnum);
-                    em.merge(usuario);
                     tx.commit();
                     return true;
                 }
@@ -170,9 +140,8 @@ public class UsuarioDAO {
 
     /**
      * UPDATE masivo: asciende a INSTRUCTOR a todos los estudiantes cuyo email
-     * pertenezca a CUALQUIERA de los dominios indicados. Construye dinámicamente
-     * una condición OR con un LIKE por cada dominio, en una sola consulta.
-     * @return cantidad de filas afectadas
+     * pertenezca a CUALQUIERA de los dominios indicados.
+     * Insensible a mayúsculas/minúsculas y adaptable si no se incluye el '.com' o se agrega un '@'.
      */
     public int ascenderPorDominios(List<String> dominios) {
         if (dominios == null || dominios.isEmpty()) {
@@ -188,15 +157,24 @@ public class UsuarioDAO {
                     "UPDATE Usuario u SET u.rol = :nuevoRol WHERE u.rol = :rolActual AND (");
             for (int i = 0; i < dominios.size(); i++) {
                 if (i > 0) jpql.append(" OR ");
-                jpql.append("u.email LIKE :dominio").append(i);
+                jpql.append("LOWER(u.email) LIKE LOWER(:dominio").append(i).append(")");
             }
             jpql.append(")");
 
             Query query = em.createQuery(jpql.toString());
             query.setParameter("nuevoRol", RolUsuario.INSTRUCTOR);
             query.setParameter("rolActual", RolUsuario.ESTUDIANTE);
+
             for (int i = 0; i < dominios.size(); i++) {
-                query.setParameter("dominio" + i, "%@" + dominios.get(i).trim());
+                String d = dominios.get(i).trim().toLowerCase();
+                if (d.startsWith("@")) {
+                    d = d.substring(1);
+                }
+                if (!d.contains(".")) {
+                    query.setParameter("dominio" + i, "%@" + d + "%");
+                } else {
+                    query.setParameter("dominio" + i, "%@" + d);
+                }
             }
 
             int filasAfectadas = query.executeUpdate();
@@ -212,9 +190,7 @@ public class UsuarioDAO {
 
     /**
      * DELETE masivo: elimina estudiantes que NO tienen ninguna inscripción
-     * Y que se registraron antes de la fecha indicada (evita borrar cuentas
-     * recién creadas que todavía no alcanzan a inscribirse en nada).
-     * @return cantidad de filas eliminadas
+     * Y que se registraron antes de la fecha indicada.
      */
     public int eliminarEstudiantesSinInscripcionAntesDe(Date fecha) {
         EntityManager em = emf.createEntityManager();
