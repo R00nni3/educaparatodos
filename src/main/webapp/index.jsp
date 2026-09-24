@@ -48,8 +48,8 @@
     <!-- Hero -->
     <section class="hero">
         <div class="hero-content">
-            <h2>Bienvenido a la plataforma educativa</h2>
-            <p>Ofrecemos cursos gratuitos en una variedad de temas para comunidades desfavorecidas. ¡Aprende a tu propio ritmo!</p>
+            <h2>¡Bienvenido a Educa para Todos!</h2>
+            <p>Plataforma educativa en la que ofrecemos cursos gratuitos y variados para que puedas aumentar tus capacidades. ¡Aprende a tu propio ritmo!</p>
             <a href="${pageContext.request.contextPath}/cursos" class="btn-primary">Explorar Cursos</a>
         </div>
     </section>
@@ -92,7 +92,7 @@
 
 <!-- Footer -->
 <footer>
-    <p>&copy; 2026 EducaParaTodos. Todos los derechos reservados.</p>
+    <p>&copy; 2026 EducaParaTodos. Todos los derechos reservados https://github.com/R00nni3.</p>
 </footer>
 </body>
 </html>

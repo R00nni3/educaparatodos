@@ -14,33 +14,28 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.List;
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @WebServlet("/usuarios")
 public class UsuarioServlet extends HttpServlet {
 
     private final UsuarioDAO usuarioDAO = new UsuarioDAO();
-    private final SimpleDateFormat formatoFecha = new SimpleDateFormat("yyyy-MM-dd");
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         String accion = request.getParameter("accion");
-        if (accion == null) accion = "listar";
+        if (accion == null) accion = "listarAdmin";
 
         switch (accion) {
-            case "perfil":
-                mostrarPerfil(request, response);
-                break;
             case "listarAdmin":
                 listarParaAdmin(request, response);
                 break;
-            case "listar":
             default:
-                listarTodos(request, response);
+                response.sendRedirect(request.getContextPath() + "/index.jsp");
                 break;
         }
     }
@@ -52,43 +47,29 @@ public class UsuarioServlet extends HttpServlet {
         String accion = request.getParameter("accion");
         if (accion == null) accion = "";
 
-            switch (accion) {
-                case "crear":
-                    crear(request, response);
-                    break;
-                case "actualizar":
-                    actualizar(request, response);
-                    break;
-                case "eliminar":
-                    eliminar(request, response);
-                    break;
-                case "ascenderPorDominio":
-                    ascenderPorDominio(request, response);
-                    break;
-                case "eliminarSinInscripcion":
-                    eliminarSinInscripcion(request, response);
-                    break;
-                default:
-                    response.sendRedirect(request.getContextPath() + "/usuarios");
-            }
+        switch (accion) {
+            case "crear":
+                crear(request, response);
+                break;
+            case "actualizar":
+                actualizar(request, response);
+                break;
+            case "eliminar":
+                eliminar(request, response);
+                break;
+            case "ascenderPorDominio":
+                ascenderPorDominio(request, response);
+                break;
+            case "eliminarSinInscripcion":
+                eliminarSinInscripcion(request, response);
+                break;
+            default:
+                response.sendRedirect(request.getContextPath() + "/usuarios?accion=listarAdmin");
+                break;
+        }
     }
 
     // ---------- LECTURA (GET) ----------
-
-    private void listarTodos(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        List<Usuario> usuarios = usuarioDAO.listarTodos();
-        request.setAttribute("usuarios", usuarios);
-        response.sendRedirect(request.getContextPath() + "/mi-perfil");
-    }
-
-    private void mostrarPerfil(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        Long id = Long.parseLong(request.getParameter("id"));
-        Usuario usuario = usuarioDAO.buscarPorId(id);
-        request.setAttribute("usuario", usuario);
-        response.sendRedirect(request.getContextPath() + "/mi-perfil");
-    }
 
     private void listarParaAdmin(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -121,7 +102,7 @@ public class UsuarioServlet extends HttpServlet {
                 : RolUsuario.ESTUDIANTE);
 
         usuarioDAO.crear(usuario);
-        response.sendRedirect(request.getContextPath() + "/usuarios");
+        response.sendRedirect(request.getContextPath() + "/usuarios?accion=listarAdmin");
     }
 
     private void actualizar(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -134,29 +115,15 @@ public class UsuarioServlet extends HttpServlet {
         }
 
         Long id = Long.parseLong(request.getParameter("id"));
-        Usuario usuario = usuarioDAO.buscarPorId(id);
-        if (usuario != null) {
-            usuario.setNombre(request.getParameter("nombre"));
-            usuario.setEmail(request.getParameter("email"));
+        String rolParam = request.getParameter("rol");
 
-            String rolParam = request.getParameter("rol");
-            if (rolParam != null && !rolParam.isEmpty()) {
-                RolUsuario rolEnum = null;
-                for (RolUsuario r : RolUsuario.values()) {
-                    if (r.name().equalsIgnoreCase(rolParam) ||
-                            (rolParam.equalsIgnoreCase("PROFESOR") && r.name().equalsIgnoreCase("INSTRUCTOR")) ||
-                            (rolParam.equalsIgnoreCase("INSTRUCTOR") && r.name().equalsIgnoreCase("PROFESOR"))) {
-                        rolEnum = r;
-                        break;
-                    }
-                }
-                if (rolEnum != null) {
-                    usuario.setRol(rolEnum);
-                }
+        if (rolParam != null && !rolParam.isEmpty()) {
+            boolean exito = usuarioDAO.cambiarRolUsuario(id, rolParam);
+            if (exito) {
+                request.getSession().setAttribute("mensaje", "Rol de usuario actualizado correctamente.");
+            } else {
+                request.getSession().setAttribute("mensaje", "No se pudo actualizar el rol del usuario.");
             }
-
-            usuarioDAO.actualizar(usuario);
-            request.getSession().setAttribute("mensaje", "Usuario actualizado correctamente.");
         }
         response.sendRedirect(request.getContextPath() + "/usuarios?accion=listarAdmin");
     }
@@ -172,8 +139,7 @@ public class UsuarioServlet extends HttpServlet {
 
         Long id = Long.parseLong(request.getParameter("id"));
 
-        // Evita que un admin se elimine a sí mismo por accidente y quede
-        // sin sesión válida ni forma de administrar el sistema.
+        // Evita que un admin se elimine a sí mismo por accidente
         if (usuarioLogueado.getId().equals(id)) {
             request.getSession().setAttribute("mensaje", "No puedes eliminar tu propia cuenta mientras estás conectado.");
             response.sendRedirect(request.getContextPath() + "/usuarios?accion=listarAdmin");
@@ -186,7 +152,7 @@ public class UsuarioServlet extends HttpServlet {
     }
 
     // ---------- OPERACIONES MASIVAS ----------
-    // Operación masiva: asciende a INSTRUCTOR por VARIOS dominios de correo a la vez
+
     private void ascenderPorDominio(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(false);
         Usuario usuarioLogueado = (session != null) ? (Usuario) session.getAttribute("usuarioLogueado") : null;
@@ -196,8 +162,8 @@ public class UsuarioServlet extends HttpServlet {
             return;
         }
 
-        String dominiosParam = request.getParameter("dominios"); // ej: "instituto.cl,uni.edu,otro.org"
-        List<String> dominios = new java.util.ArrayList<>();
+        String dominiosParam = request.getParameter("dominios");
+        List<String> dominios = new ArrayList<>();
         if (dominiosParam != null && !dominiosParam.isEmpty()) {
             for (String d : dominiosParam.split(",")) {
                 if (!d.trim().isEmpty()) {
@@ -211,7 +177,6 @@ public class UsuarioServlet extends HttpServlet {
         response.sendRedirect(request.getContextPath() + "/usuarios?accion=listarAdmin");
     }
 
-    // Operación masiva: elimina estudiantes sin inscripción, registrados antes de una fecha (Solo ADMIN)
     private void eliminarSinInscripcion(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpSession session = request.getSession(false);
         Usuario usuarioLogueado = (session != null) ? (Usuario) session.getAttribute("usuarioLogueado") : null;

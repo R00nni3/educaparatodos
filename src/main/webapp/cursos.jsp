@@ -82,7 +82,7 @@
 
 <!-- Footer anclado abajo -->
 <footer>
-    <p>&copy; 2026 EducaParaTodos. Todos los derechos reservados.</p>
+    <p>&copy; 2026 EducaParaTodos. Todos los derechos reservados https://github.com/R00nni3.</p>
 </footer>
 
 </body>
