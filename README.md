@@ -116,6 +116,10 @@ El proyecto tiene aún aspectos a mejorar, como por ejemplo, autenticación de c
 
 Tuve problemas con el namespace que me mantuvo con error durante varias horas, por lo que debí cambiar de Tomcat 10.x a Tomcat 9.x
 
+## Video de YouTube
+
+https://youtu.be/Xgt0_0wprRw
+
 ## Desarrollado por
 
 Rosario González Perucich
